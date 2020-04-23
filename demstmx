@@ -1,0 +1,148 @@
+#Shiny covidstress mexico
+#Librerías
+library(shiny)
+library(shinyWidgets)
+library(tidyverse)
+
+#declaramos el layout
+ui <- fluidPage(
+  titlePanel("COVIDStress México"),
+  sidebarLayout(
+    sidebarPanel(
+      pickerInput("Estado",
+                  "Estado de residencia",
+                  choices = list("Aguascalientes" = "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas",
+                                 "Chihuahua", "Coahuila", "Colima", "CDMX", "Durango", "Guanajuato",
+                                 "Guerrero", "Hidalgo", "Jalisco", "Estado de México", "Michoacán", "Morelos",
+                                 "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", 
+                                 "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala",
+                                 "Veracruz", "Yucatán", "Zacatecas"),
+                  options = list(`actions-box` = TRUE),multiple = T,
+                  selected = NULL),
+      pickerInput("Sexo",
+                 "Género",
+                 choices = list("Mujeres", "Hombres", "Otro/Prefiere no decir"),
+                 options = list(`actions-box` = TRUE),multiple = T,
+                 selected = NULL),
+      pickerInput("Edad",
+                  "Rango de edad",
+                  choices = list("20 o menos", "21 - 30", "31 - 40",
+                                 "41 - 50", "51 - 60", "61 - 70",
+                                 "70 o más"),
+                  options = list(`actions-box` = TRUE),multiple = T,
+                  selected = NULL),
+      pickerInput("Escolaridad",
+                  "Escolaridad",
+                  choices = list("Ninguna", "Primaria", "Secundaria",
+                                 "Bachillerato", "Licenciatura trunca",
+                                 "Licenciatura", "Posgrado"),
+                  options = list(`actions-box` = TRUE),multiple = T,
+                  selected = NULL),
+      pickerInput("Empleo",
+                  "Situación laboral",
+                  choices = list("Sin empleo", "Retirado-Jubilado", "Estudiante", 
+                                 "Empleo de tiempo parcial", "Empleo de tiempo completo", 
+                                 "Auto empleo"),
+                  options = list(`actions-box` = TRUE),multiple = T,
+                  selected = NULL),
+      pickerInput("Edocivil",
+                  "Estado civil",
+                  choices = list("Soltera(o)", "Divordicada(o)/viuda(o)", "Casada(o)/en unión libre", 
+                                 "Otro/prefiere no decir"),
+                  options = list(`actions-box` = TRUE),multiple = T,
+                  selected = NULL),
+      pickerInput("Aislamiento",
+                  "Condición de aislamiento",
+                  choices = list("En aislamiento", "En aislamiento en unidad médica o similar", 
+                                 "La vida sigue sin cambios", 
+                                 "La vida sigue con cambios menores"),
+                  options = list(`actions-box` = TRUE),multiple = T,
+                  selected = NULL),
+      pickerInput("Isoladu",
+                  "En aislamiento con otros adultos",
+                  choices = list("Sí", "No"),
+                  options = list(`actions-box` = TRUE),multiple = T,
+                  selected = NULL),
+      pickerInput("Isolkid",
+                  "En aislamiento con niños",
+                  choices = list("Sí", "No"),
+                  options = list(`actions-box` = TRUE),multiple = T,
+                  selected = NULL),
+    ),
+    mainPanel(h3("Distribución del estrés"), 
+              br(), 
+              h4(textOutput("inputMedia"), align="left"), plotOutput("boxStress")
+    )
+  )
+)
+
+server <- function(input, output) {
+
+  temp <- tempfile()
+  download.file("https://raw.githubusercontent.com/rubenflog/covstress/master/clean_mx.csv",temp)
+  clean_mx <- read.csv(temp, encoding="UTF-8")
+  unlink(temp)
+  
+  output$inputMedia <- renderText({
+    if(!is.null(input$Estado)){j <- input$Estado} else {j <- as.vector(clean_mx$Dem_state)}
+    if(!is.null(input$Sexo)){k <- input$Sexo} else {k <- as.vector(clean_mx$Dem_gender)}
+    if(!is.null(input$Edad)){l <- input$Edad} else {l <- as.vector(clean_mx$dem_ageG)}
+    if(!is.null(input$Escolaridad)){m <- input$Escolaridad} else {m <- as.vector(clean_mx$Dem_edu)}
+    if(!is.null(input$Empleo)){n <- input$Empleo} else {n <- as.vector(clean_mx$Dem_employment)}
+    if(!is.null(input$Edocivil)){o <- input$Edocivil} else {o <- as.vector(clean_mx$Dem_maritalstatus)}
+    if(!is.null(input$Aislamiento)){p <- input$Aislamiento} else {p <- as.vector(clean_mx$Dem_islolation)}
+    if(!is.null(input$Isoladu)){q <-  input$Isoladu} else {q <-   as.vector(clean_mx$isoladult)}
+    if(!is.null(input$Isolkid)){r <-  input$Isolkid} else {r <-   as.vector(clean_mx$isolkids)}
+    
+    x <- clean_mx %>% filter(Dem_state %in% j) %>% 
+      filter(Dem_gender %in% k)%>%
+      filter(Dem_gender %in% k) %>%
+      filter(dem_ageG %in% l) %>%
+      filter(Dem_edu %in% m) %>%
+      filter(Dem_employment %in% n) %>%
+      filter(Dem_maritalstatus %in% o) %>%
+      filter(Dem_islolation %in% p) %>%
+      filter(isoladult %in% q) %>%
+      filter(isolkids %in% r)
+    
+    paste("Media de estrés =", round(mean(x$TstressW), 2))
+  })
+  
+  output$boxStress <- renderPlot({
+    
+    if(!is.null(input$Estado)){j <- input$Estado} else {j <- as.vector(clean_mx$Dem_state)}
+    if(!is.null(input$Sexo)){k <- input$Sexo} else {k <- as.vector(clean_mx$Dem_gender)}
+    if(!is.null(input$Edad)){l <- input$Edad} else {l <- as.vector(clean_mx$dem_ageG)}
+    if(!is.null(input$Escolaridad)){m <- input$Escolaridad} else {m <- as.vector(clean_mx$Dem_edu)}
+    if(!is.null(input$Empleo)){n <- input$Empleo} else {n <- as.vector(clean_mx$Dem_employment)}
+    if(!is.null(input$Edocivil)){o <- input$Edocivil} else {o <- as.vector(clean_mx$Dem_maritalstatus)}
+    if(!is.null(input$Aislamiento)){p <- input$Aislamiento} else {p <- as.vector(clean_mx$Dem_islolation)}
+    if(!is.null(input$Isoladu)){q <-  input$Isoladu} else {q <-   as.vector(clean_mx$isoladult)}
+    if(!is.null(input$Isolkid)){r <-  input$Isolkid} else {r <-   as.vector(clean_mx$isolkids)}
+    
+    x <- clean_mx %>% filter(Dem_state %in% j) %>% 
+      filter(Dem_gender %in% k)%>%
+      filter(Dem_gender %in% k) %>%
+      filter(dem_ageG %in% l) %>%
+      filter(Dem_edu %in% m) %>%
+      filter(Dem_employment %in% n) %>%
+      filter(Dem_maritalstatus %in% o) %>%
+      filter(Dem_islolation %in% p) %>%
+      filter(isoladult %in% q) %>%
+      filter(isolkids %in% r)
+    validate(
+      need(length(x$TstressW)>0, "No se encontraron casos")
+    )
+    ggplot(x, aes(x="",y = TstressW, color=TstressW))+
+      geom_jitter(aes(alpha=.05), width = .5, height = .5, show.legend = FALSE)+
+      scale_color_gradient(name="",low="green", high="red", breaks=NULL)+
+      scale_y_continuous(breaks = seq(10,50,20), limits = c(10,50), labels = c("Bajo", "Medio", "Alto"))+
+      labs(y="Nivel de estrés", x= "Participantes")+
+      theme(axis.title.x = element_text(size=18), 
+            axis.title.y = element_text(size=18),
+            axis.text.x = element_text(size=14),
+            axis.text.y = element_text(size=14))
+  })
+}
+
+shinyApp(ui=ui, server=server)
