@@ -12,7 +12,7 @@
 # Reading the database
 ## About a dozen test answers cleaned, including one from the Mexican team
     stressW<- read.csv("~/covidstress/cs27apr.csv", encoding = "UTF-8")
-    stressW <- stressW [3:103827,] %>% filter(!Dem_state =="VERACRUZ-PRUEBA") %>%
+    stressW <- stressW [3:158774,] %>% filter(!Dem_state =="VERACRUZ-PRUEBA") %>%
       filter(!Expl_Distress_txt=="Please exclude - test")#get rid of descriptions and test answer
 
 # Recode marital status for languages different than english
