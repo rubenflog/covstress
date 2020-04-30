@@ -2,7 +2,12 @@
 #Librerías
 library(shiny)
 library(shinyWidgets)
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(tibble)
+
+clean_mx <- read.csv("cleanmx2.csv", encoding="latin1")
 
 #declaramos el layout
 ui <- fluidPage(
@@ -11,7 +16,7 @@ ui <- fluidPage(
     sidebarPanel(
       pickerInput("Estado",
                   "Estado de residencia",
-                  choices = list("Aguascalientes" = "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas",
+                  choices = list("Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas",
                                  "Chihuahua", "Coahuila", "Colima", "CDMX", "Durango", "Guanajuato",
                                  "Guerrero", "Hidalgo", "Jalisco", "Estado de México", "Michoacán", "Morelos",
                                  "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", 
@@ -34,7 +39,7 @@ ui <- fluidPage(
       pickerInput("Escolaridad",
                   "Escolaridad",
                   choices = list("Ninguna", "Primaria", "Secundaria",
-                                 "Bachillerato", "Licenciatura trunca",
+                                 "Bachillerato ", "Licenciatura trunca",
                                  "Licenciatura", "Posgrado"),
                   options = list(`actions-box` = TRUE),multiple = T,
                   selected = NULL),
@@ -47,7 +52,7 @@ ui <- fluidPage(
                   selected = NULL),
       pickerInput("Edocivil",
                   "Estado civil",
-                  choices = list("Soltera(o)", "Divordicada(o)/viuda(o)", "Casada(o)/en unión libre", 
+                  choices = list("Soltera(o)", "Divorciada(o)/viuda(o)", "Casada(o)/en unión libre", 
                                  "Otro/prefiere no decir"),
                   options = list(`actions-box` = TRUE),multiple = T,
                   selected = NULL),
@@ -69,8 +74,10 @@ ui <- fluidPage(
                   options = list(`actions-box` = TRUE),multiple = T,
                   selected = NULL),
     ),
-    mainPanel(h3("Distribución del estrés"), 
-              br(), 
+    mainPanel(h3("Distribución del estrés asociado a COVID-19"), 
+              br(),
+              p("En la siguiente gráfica puedes observar cómo afectó el estrés a mexicanas y mexicanos durante los inicios de la contingencia por COVID19, según los resultados de la encuesta COVIDStress. Cada punto es una persona. Selecciona los valores del panel para visualizar resultados para conjuntos específicos de personas."),
+              br(),
               h4(textOutput("inputMedia"), align="left"), plotOutput("boxStress")
     )
   )
@@ -78,11 +85,6 @@ ui <- fluidPage(
 
 server <- function(input, output) {
 
-  temp <- tempfile()
-  download.file("https://raw.githubusercontent.com/rubenflog/covstress/master/clean_mx.csv",temp)
-  clean_mx <- read.csv(temp, encoding="UTF-8")
-  unlink(temp)
-  
   output$inputMedia <- renderText({
     if(!is.null(input$Estado)){j <- input$Estado} else {j <- as.vector(clean_mx$Dem_state)}
     if(!is.null(input$Sexo)){k <- input$Sexo} else {k <- as.vector(clean_mx$Dem_gender)}
@@ -95,7 +97,6 @@ server <- function(input, output) {
     if(!is.null(input$Isolkid)){r <-  input$Isolkid} else {r <-   as.vector(clean_mx$isolkids)}
     
     x <- clean_mx %>% filter(Dem_state %in% j) %>% 
-      filter(Dem_gender %in% k)%>%
       filter(Dem_gender %in% k) %>%
       filter(dem_ageG %in% l) %>%
       filter(Dem_edu %in% m) %>%
@@ -121,7 +122,6 @@ server <- function(input, output) {
     if(!is.null(input$Isolkid)){r <-  input$Isolkid} else {r <-   as.vector(clean_mx$isolkids)}
     
     x <- clean_mx %>% filter(Dem_state %in% j) %>% 
-      filter(Dem_gender %in% k)%>%
       filter(Dem_gender %in% k) %>%
       filter(dem_ageG %in% l) %>%
       filter(Dem_edu %in% m) %>%
