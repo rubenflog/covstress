@@ -22,7 +22,7 @@
       if_else(condition, recode(x, ...), x)
     }
 
-# Fix differences in scoring between english and other languages 
+## Fix differences in scoring between english and other languages 
     stressW <- stressW %>%
       mutate(Dem_maritalstatus = 
            recode_if(Dem_maritalstatus, UserLanguage != "EN", 
@@ -31,7 +31,7 @@
                      "Divorced/widowed"= "Married/cohabiting",
                      "Other or would rather not say" = "Divorced/widowed"))
 
-# Coerce as dates
+## Coerce as dates
     stressW$StartDate <- as_datetime(stressW$StartDate)
     stressW$EndDate <- as_datetime(stressW$EndDate)
 
@@ -108,6 +108,7 @@
                                     Dem_gender == "Male" ~ "Female",
                                     Dem_gender == "Other/would rather not say" ~ "Other/would rather not say"), 
                                     Dem_gender))
+    stressW$Dem_gender <- as.factor(stressW$Dem_gender)
 
 # Selecting complete scales with more than 2 items
     stressW <- filter_at(stressW, vars(contains("Expl_media_")), all_vars(.!=""))#Media
@@ -185,18 +186,18 @@
     stressW$Scale_PSS10_UCLA_10 <- as.numeric(as.character(recodet(stressW$Scale_PSS10_UCLA_10)))
     TstressW <- stressW [,29:38]%>%rowSums()
 
-# Loneliness scale
+## Loneliness scale
     stressW$Scale_PSS10_UCLA_11 <- as.numeric(as.character(recodet(stressW$Scale_PSS10_UCLA_11)))
     stressW$Scale_PSS10_UCLA_12 <- as.numeric(as.character(recodet(stressW$Scale_PSS10_UCLA_12)))
     stressW$Scale_PSS10_UCLA_13 <- as.numeric(as.character(recodet(stressW$Scale_PSS10_UCLA_13)))
     TloneW <- stressW [,39:41] %>% rowSums()
 
-# Trust in people
+## Trust in people
     stressW$OECD_people_1 <- as.numeric(as.character(stressW$OECD_people_1))
     stressW$OECD_people_2 <- as.numeric(as.character(stressW$OECD_people_2))
     TpeopleW <- stressW [,42:43] %>% rowSums()
 
-# Trust in institutions
+## Trust in institutions
     stressW$OECD_insititutions_1 <- as.numeric(as.character(stressW$OECD_insititutions_1))
     stressW$OECD_insititutions_2 <- as.numeric(as.character(stressW$OECD_insititutions_2))
     stressW$OECD_insititutions_3 <- as.numeric(as.character(stressW$OECD_insititutions_3))
@@ -205,7 +206,7 @@
     stressW$OECD_insititutions_6 <- as.numeric(as.character(stressW$OECD_insititutions_6))
     TinstW <- stressW [,44:49] %>% rowSums()
 
-# Coronavirus concerns
+## Coronavirus concerns
     stressW$Corona_concerns_1<- as.numeric(as.character(recodea(stressW$Corona_concerns_1)))
     stressW$Corona_concerns_2<- as.numeric(as.character(recodea(stressW$Corona_concerns_2)))
     stressW$Corona_concerns_3<- as.numeric(as.character(recodea(stressW$Corona_concerns_3)))
@@ -213,17 +214,14 @@
     stressW$Corona_concerns_5<- as.numeric(as.character(recodea(stressW$Corona_concerns_5)))
     TconcernW <- stressW [,50:54] %>% rowSums()
 
-# Country measures (though I would go for a strictness measures index)
+## Country measures (though I would go for a strictness measures index)
     levels(stressW$Trust_countrymeasure) <- sub("Too much", "11", levels(stressW$Trust_countrymeasure))
     levels(stressW$Trust_countrymeasure) <- sub("Appropriate", "5", levels(stressW$Trust_countrymeasure))
     levels(stressW$Trust_countrymeasure) <- sub("Too little", "0", levels(stressW$Trust_countrymeasure))
     stressW$Trust_countrymeasure<- as.numeric(as.character(stressW$Trust_countrymeasure))
 
-# Compliance
-## The alpha of the scale is low, so I only added the items
-## regarding social distance Compliance_2 & Compliance_3
-## with these two items, the alpha of the scale improves above 0.7
-## but now the scale is only about compliance with social distancing
+## Compliance
+### The alpha of the scale is low, so I only added the items regarding social distance Compliance_2 & Compliance_3. With these two items, the alpha of the scale improves above 0.7, but now the scale is only about compliance with social distancing
     stressW$Compliance_1<- as.numeric(as.character(recodea(stressW$Compliance_1)))
     stressW$Compliance_2<- as.numeric(as.character(recodea(stressW$Compliance_2)))
     stressW$Compliance_3<- as.numeric(as.character(recodea(stressW$Compliance_3)))
@@ -232,7 +230,7 @@
     stressW$Compliance_6<- as.numeric(as.character(recodea(stressW$Compliance_6)))
     TcomplW <- stressW [,57:58] %>% rowSums()
 
-# Each of the Big 5 alphas may not be good, as expected in B5 scales with few items
+# Each of the Big 5. Alphas may not be good, as expected in B5 scales with few items
 ## neurosis 1, 2, 3R
     stressW$BFF_15_1<- as.numeric(as.character(recodea(stressW$BFF_15_1)))
     stressW$BFF_15_2<- as.numeric(as.character(recodea(stressW$BFF_15_2)))
@@ -324,10 +322,7 @@
     TcopingW <- stressW [,112:127] %>% rowSums()
 
 # Media
-## Alfa increases greatly if last item is dropped.
-## The sentence of the last item refers to attitude, while the previous items
-## regard only consumption.
-## Thus, the value of the scale considers only the first five items
+## Alfa increases greatly if last item is dropped. The sentence of the last item refers to attitude, while the previous items regard only consumption. Thus, the value of the scale considers only the first five items
     stressW$Expl_media_1<- as.numeric(as.character(recodea(stressW$Expl_media_1)))
     stressW$Expl_media_2<- as.numeric(as.character(recodea(stressW$Expl_media_2)))
     stressW$Expl_media_3<- as.numeric(as.character(recodea(stressW$Expl_media_3)))
@@ -346,11 +341,7 @@
 # And we paste the scale results with the general database
     clean_world <- stressW %>% bind_cols(ScalesW)
 
-# Just remember demographics and very small scales were not cleaned
-# There is also the thing with the countries and user languages that
-# seems to affect mainly Bulgaria.
-# An LO! You're ready to perform your magic on analyses
-# and visualizations. Good luck!
+## Just remember demographics and very small scales were not cleaned. And LO! You're ready to perform your magic on analyses and visualizations. Good luck!
 
 # Limpieza para MX
 ## Limpiamos para MX y traducimos
