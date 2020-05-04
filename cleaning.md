@@ -361,7 +361,7 @@
     levels(clean_mx$Dem_edu_mom) <- sub("- College degree", "Licenciatura", levels(clean_mx$Dem_edu_mom))
     levels(clean_mx$Dem_edu_mom) <- sub("- None", "Ninguna", levels(clean_mx$Dem_edu_mom))
     levels(clean_mx$Dem_edu_mom) <- sub("- PhD/Doctorate", "Posgrado", levels(clean_mx$Dem_edu_mom))
-    levels(clean_mx$Dem_edu_mom) <- sub("- Some College, short continuing education or equivalent", "Licenciatura trunca",   levels(clean_mx$Dem_edu_mom))
+    levels(clean_mx$Dem_edu_mom) <- sub("- Some College or equivalent", "Licenciatura trunca", levels(clean_mx$Dem_edu_mom))
     levels(clean_mx$Dem_edu_mom) <- sub("- Up to 12 years of school", "Bachillerato", levels(clean_mx$Dem_edu_mom))
     levels(clean_mx$Dem_edu_mom) <- sub("- Up to 9 years of school", "Secundaria", levels(clean_mx$Dem_edu_mom))
     levels(clean_mx$Dem_edu_mom) <- sub("- Up to 6 years of school", "Primaria", levels(clean_mx$Dem_edu_mom))
