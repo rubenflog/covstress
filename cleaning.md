@@ -99,6 +99,7 @@
       mutate(Country = ifelse(UserLanguage == "HE",
                           case_when(Country == "Australia" ~ "Italy",
                                     Country == "Liberia" ~ "Israel"), Country))
+    stressW$Country <- as.factor(stressW$Country)
 
 # And now, the matter with female and male inverted for Mexico & Spain
     stressW$Dem_gender <- as.character(stressW$Dem_gender)
