@@ -9,6 +9,14 @@ library(tibble)
 
 clean_mx <- read.csv("cleanmx2.csv", encoding="latin1")
 
+distf <- as.factor(c("Ingreso diario", "Trabajo", "Educación de los hijos", "Perspectivas de trabajo",
+                     "Acceso a artículos básicos", "Eventos sociales", "Actividades religiosas",
+                     "Lidiar con otros adultos", "Lidiar con niños", "Economía nacional",
+                     "Servicios públicos", "Contagio", "Riesgo de hospitalización", "Amigos y parientes lejanos",
+                     "Trabajo a distancia", "Vida social digital", "Cambio de actitudes hacia los demás",
+                     "Soledad", "Pasar tiempo en casa", "Tiempo de convivencia con otros", "No tener noticias sobre el COVID",
+                     "No saber qué hacer para evitar propagar el COVID", "No saber cuánto durará la cuarentena",
+                     "No poder viajar"))
 #declaramos el layout
 ui <- fluidPage(
   titlePanel("COVIDStress México"),
@@ -74,11 +82,33 @@ ui <- fluidPage(
                   options = list(`actions-box` = TRUE),multiple = T,
                   selected = NULL),
     ),
-    mainPanel(h3("Distribución del estrés asociado a COVID-19"), 
-              br(),
-              p("En la siguiente gráfica puedes observar cómo afectó el estrés a mexicanas y mexicanos durante los inicios de la contingencia por COVID19, según los resultados de la encuesta COVIDStress. Cada punto es una persona. Selecciona los valores del panel para visualizar resultados para conjuntos específicos de personas."),
-              br(),
-              h4(textOutput("inputMedia"), align="left"), plotOutput("boxStress")
+    mainPanel(
+      tabsetPanel(type = "tabs",
+                  tabPanel("Distribución", 
+                           h3("Distribución del estrés asociado a COVID-19"), 
+                           br(),
+                           p("En la siguiente gráfica puedes observar cómo afectó el estrés a mexicanas y mexicanos durante la contingencia por COVID19, según los resultados de la encuesta COVIDStress. Cada punto es una persona. Selecciona los valores del panel para visualizar resultados para conjuntos específicos de personas."),
+                           br(),
+                           h4(textOutput("inputMedia"), align="left"), plotOutput("boxStress")),
+                  tabPanel("Estresores", 
+                           h3("Fuentes de estrés durante la contingencia"),
+                           br(),
+                           p("En esta gráfica puedes observar algunas fuentes de preocupación durante la contingencia, y su impacto sobre el estrés percibido. Selecciona los valores del panel para visualizar resultados para conjuntos específicos de personas."),
+                           br(),
+                           h4("Fuentes de estrés"),
+                           plotOutput("Stressors")),
+                  tabPanel("Autores",
+                           h3("COVIDStress México"),
+                           p(a("Dr. Rubén Flores González - Universidad Veracruzana", href="https://uv-mx.academia.edu/RubénFloresGonzález")),
+                           p(a("Dr. Claudio Rafael Castro López - Universidad Veracruzana", href="https://www.uv.mx/eme/files/2012/11/Dr.-Claudio-Rafael-Castro-Lopez.pdf")),
+                           p(a("Dra. Vicenta Reynoso Alcántara - Universidad Veracruzana", href="https://www.researchgate.net/profile/Vicenta_Reynoso-Alcantara")),
+                           p(a("Dra. Fernanda Pérez Gay Juárez - McGill University", href="https://www.researchgate.net/profile/Fernanda_Perez-Gay_Juarez")),
+                           p(a("Dr. Carlos César Contreras Ibáñez - Universidad Autónoma Metropolitana U. Iztapalapa", href="https://sites.google.com/view/carlos-contreras-ibanez/home")),
+                           p("Liz Martínez - Universidad de California, Merced"),
+                           br(),
+                           p("Actualizado el 4 de mayo de 2020, contacto:", a("rubeflores@uv.mx", href="mailto:rubeflores@uv.mx")))
+                  )
+      
     )
   )
 )
@@ -134,14 +164,70 @@ server <- function(input, output) {
       need(length(x$TstressW)>0, "No se encontraron casos")
     )
     ggplot(x, aes(x="",y = TstressW, color=TstressW))+
-      geom_jitter(aes(alpha=.05), width = .5, height = .5, show.legend = FALSE)+
+      geom_jitter(aes(alpha=.5), width = .5, height = .5, show.legend = FALSE)+
       scale_color_gradient(name="",low="green", high="red", breaks=NULL)+
       scale_y_continuous(breaks = seq(10,50,20), limits = c(10,50), labels = c("Bajo", "Medio", "Alto"))+
-      labs(y="Nivel de estrés", x= "Participantes")+
+      scale_x_discrete(breaks=NULL)+
+      labs(y="Nivel de estrés", x= " ")+
+      theme_bw()+
       theme(axis.title.x = element_text(size=18), 
             axis.title.y = element_text(size=18),
             axis.text.x = element_text(size=14),
             axis.text.y = element_text(size=14))
+  })
+  
+  output$Stressors <- renderPlot({
+    
+    if(!is.null(input$Estado)){j <- input$Estado} else {j <- as.vector(clean_mx$Dem_state)}
+    if(!is.null(input$Sexo)){k <- input$Sexo} else {k <- as.vector(clean_mx$Dem_gender)}
+    if(!is.null(input$Edad)){l <- input$Edad} else {l <- as.vector(clean_mx$dem_ageG)}
+    if(!is.null(input$Escolaridad)){m <- input$Escolaridad} else {m <- as.vector(clean_mx$Dem_edu)}
+    if(!is.null(input$Empleo)){n <- input$Empleo} else {n <- as.vector(clean_mx$Dem_employment)}
+    if(!is.null(input$Edocivil)){o <- input$Edocivil} else {o <- as.vector(clean_mx$Dem_maritalstatus)}
+    if(!is.null(input$Aislamiento)){p <- input$Aislamiento} else {p <- as.vector(clean_mx$Dem_islolation)}
+    if(!is.null(input$Isoladu)){q <-  input$Isoladu} else {q <-   as.vector(clean_mx$isoladult)}
+    if(!is.null(input$Isolkid)){r <-  input$Isolkid} else {r <-   as.vector(clean_mx$isolkids)}
+    
+    x <- clean_mx %>% filter(Dem_state %in% j) %>% 
+      filter(Dem_gender %in% k) %>%
+      filter(dem_ageG %in% l) %>%
+      filter(Dem_edu %in% m) %>%
+      filter(Dem_employment %in% n) %>%
+      filter(Dem_maritalstatus %in% o) %>%
+      filter(Dem_islolation %in% p) %>%
+      filter(isoladult %in% q) %>%
+      filter(isolkids %in% r)
+    validate(
+      need(length(x$Expl_Distress_1)>0, "No se encontraron casos")
+    )
+   
+    distm <- c(mean(x$Expl_Distress_1, na.rm = TRUE), mean(x$Expl_Distress_2, na.rm = TRUE),
+                       mean(x$Expl_Distress_3, na.rm = TRUE), mean(x$Expl_Distress_4, na.rm = TRUE),
+                       mean(x$Expl_Distress_5, na.rm = TRUE), mean(x$Expl_Distress_6, na.rm = TRUE),
+                       mean(x$Expl_Distress_7, na.rm = TRUE), mean(x$Expl_Distress_8, na.rm = TRUE),
+                       mean(x$Expl_Distress_9, na.rm = TRUE), mean(x$Expl_Distress_10, na.rm = TRUE),
+                       mean(x$Expl_Distress_11, na.rm = TRUE), mean(x$Expl_Distress_12, na.rm = TRUE),
+                       mean(x$Expl_Distress_13, na.rm = TRUE), mean(x$Expl_Distress_14, na.rm = TRUE),
+                       mean(x$Expl_Distress_15, na.rm = TRUE), mean(x$Expl_Distress_16, na.rm = TRUE),
+                       mean(x$Expl_Distress_17, na.rm = TRUE), mean(x$Expl_Distress_18, na.rm = TRUE),
+                       mean(x$Expl_Distress_19, na.rm = TRUE), mean(x$Expl_Distress_20, na.rm = TRUE),
+                       mean(x$Expl_Distress_21, na.rm = TRUE), mean(x$Expl_Distress_22, na.rm = TRUE),
+                       mean(x$Expl_Distress_23, na.rm = TRUE), mean(x$Expl_Distress_24, na.rm = TRUE))
+    
+    distT <- tibble(distf, distm)
+    distT$distf <- factor(distT$distf, levels = distT$distf[order(distT$distm)])
+    
+    ggplot(distT, aes(x=distf, y=distm, color=distm))+
+      geom_point(size=4)+
+      labs(x= "", y="Nivel de estrés", title = "")+
+      scale_y_continuous(breaks = seq(0,6,6), limits = c(0,6), labels = c("Bajo", "Alto"))+
+      coord_flip()+
+      scale_color_gradient(name="",low="green", high="red", breaks=NULL)+
+      theme_bw()+
+      theme(axis.title.x = element_text(size=18), 
+            axis.title.y = element_text(size=18),
+            axis.text.x = element_text(size=14),
+            axis.text.y = element_text(size=14, hjust = 1))
   })
 }
 
